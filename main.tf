@@ -79,12 +79,18 @@ resource "aws_dynamodb_table" "default" {
   tags = "${module.dynamodb_label.tags}"
 }
 
+data "aws_region" "current" {}
+
+locals {
+  iam_name_suffix = "-${data.aws_region.current.name}"
+}
+
 module "dynamodb_autoscaler" {
   source                       = "git::https://github.com/cloudposse/terraform-aws-dynamodb-autoscaler.git?ref=tags/0.2.4"
   enabled                      = "${var.enable_autoscaler}"
   namespace                    = "${var.namespace}"
   stage                        = "${var.stage}"
-  name                         = "${var.name}"
+  name                         = "${var.name}${local.iam_name_suffix}"
   delimiter                    = "${var.delimiter}"
   attributes                   = "${var.attributes}"
   dynamodb_table_name          = "${aws_dynamodb_table.default.id}"
